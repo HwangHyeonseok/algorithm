@@ -1,75 +1,110 @@
-// 시작점이 여러개인 BFS
-// => 처음 시작점을 다 넣고 한꺼번에 BFS을 돌린다.
+// BFS - 두 종류의 시작점
+
+// 불의 전파와 지훈이의 이동을 BFS로 각각 따로 따져주어야 한다.
+// 각 위치의 (불의 전파 시간 > 지훈이의 이동 가능 시간) 이어야 지훈이가 이동이 가능한 위치이다.
 
 #include <iostream>
 #include <queue>
-#include <algorithm> // fill 사용을 위한 라이브러리
+#include <climits> // INT_MAX use
 
 using namespace std;
 
-#define MAX_N 1001 // N,M의 최댓값 1001
-int Board[MAX_N][MAX_N] = { -1 }; // 1 : 익은 토마토 0 : 익지 않은 토마토 -1 : 토마토가 들어있지 않음
-int col, row;
-queue< pair<int, int> > Q;
+#define MAX_N 1001 // 맵의 최대 행과 열의 개수
+int R, C;
+char Board[MAX_N][MAX_N];
+int Jihoon[MAX_N][MAX_N];
+int Fire[MAX_N][MAX_N];
+queue< pair<int, int> > Jihoon_Q;
+queue <pair<int, int> > Fire_Q;
+// 이동 구현
+int dx[4] = { 0,0,-1,1 };
+int dy[4] = { -1,1,0,0 };
 
-void bfs() {
-    int dx[4] = { 0, -1, 0, 1 };
-    int dy[4] = { 1, 0, -1, 0 };
-
-    while (!Q.empty()) {
-        int cur_x = Q.front().first;
-        int cur_y = Q.front().second;
-        Q.pop();
+// 불에 대한 bfs
+void bfs_fire() {
+    while (!Fire_Q.empty()) {
+        int cur_x = Fire_Q.front().first;
+        int cur_y = Fire_Q.front().second;
+        Fire_Q.pop();
 
         for (int i = 0; i < 4; i++) {
             int next_x = cur_x + dx[i];
             int next_y = cur_y + dy[i];
-            // 맵 범위 밖을 벗어나는지 항상 먼저 검사
-            if (next_x >= row || next_x < 0 || next_y >= col || next_y < 0) continue;
-            if (Board[next_x][next_y] != 0) continue;
+            // 맵 범위 검사
+            if (next_x >= C || next_x < 0 || next_y >= R || next_y < 0) continue;
+            if (Board[next_y][next_x] == '#') continue; // 벽인 경우
+            if (Fire[next_y][next_x] != INT_MAX) continue; // 이미 불이 방문한 경우
 
-            Board[next_x][next_y] = Board[cur_x][cur_y] + 1;
-            Q.push({ next_x, next_y });
+            Fire[next_y][next_x] = Fire[cur_y][cur_x] + 1;
+            Fire_Q.push({ next_x,next_y });
         }
     }
 }
 
+// 지훈이에 대한 bfs
+int bfs_jihoon() {
+    while (!Jihoon_Q.empty()) {
+        int cur_x = Jihoon_Q.front().first;
+        int cur_y = Jihoon_Q.front().second;
+        Jihoon_Q.pop();
+
+        // 탈출 조건에 해당하는 경우 탈출한다.
+        if (cur_x == 0 || cur_x == C - 1 || cur_y == 0 || cur_y == R - 1) {
+            return Jihoon[cur_y][cur_x] + 1;
+        }
+
+        for (int i = 0; i < 4; i++) {
+            int next_x = cur_x + dx[i];
+            int next_y = cur_y + dy[i];
+            // 맵 범위 검사
+            if (next_x >= C || next_x < 0 || next_y >= R || next_y < 0) continue;
+            if (Board[next_y][next_x] == '#') continue; // 벽인 경우
+            if (Jihoon[next_y][next_x] != -1) continue; // 지훈이가 이미 방문한 경우
+            if ((Jihoon[cur_y][cur_x] + 1) >= Fire[next_y][next_x]) continue; // 불이 이미 지나간 경우
+
+            Jihoon[next_y][next_x] = Jihoon[cur_y][cur_x] + 1;
+            Jihoon_Q.push({ next_x,next_y });
+        }
+    }
+    return -1; // 탈출 실패
+}
+
 int main(void) {
     ios_base::sync_with_stdio(false); cin.tie(nullptr);
-    int answer = 0;
-    fill(&Board[0][0], &Board[MAX_N-1][MAX_N], -1); // 모두 -1로 초기화
-    cin >> col >> row;
+    fill(&Fire[0][0], &Fire[MAX_N - 1][MAX_N], INT_MAX);
+    fill(&Jihoon[0][0], &Jihoon[MAX_N - 1][MAX_N], -1);
+    cin >> R >> C;
 
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            int condition;
+    for (int i = 0; i < R; i++) { // y
+        for (int j = 0; j < C; j++) { // x
+            char condition;
             cin >> condition;
             Board[i][j] = condition;
         }
     }
 
-    // bfs 탐색 지점 탐색
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            if (Board[i][j] == 1)
-                Q.push(make_pair(i, j));
-        }
-    }
-
-    bfs();
-
-
-    for (int i = 0; i < row; i++) {
-        for (int j = 0; j < col; j++) {
-            if (Board[i][j] == 0) {     // 익지않은 토마토가 있을 경우 -1 출력
-                cout << "-1";
-                return 0;
+    // 각 다른 종류의 시작점 push 작업
+    for (int i = 0; i < R; i++) { // y
+        for (int j = 0; j < C; j++) { // x
+            if (Board[i][j] == 'F') {
+                Fire_Q.push(make_pair(j, i));
+                Fire[i][j] = 0;
             }
-            else {
-                answer = answer > Board[i][j] ? answer : Board[i][j];
+            else if (Board[i][j] == 'J') {
+                Jihoon_Q.push(make_pair(j, i));
+                Jihoon[i][j] = 0;
             }
         }
     }
 
-    cout << answer -1;
+    if (!Fire_Q.empty()) // 불이 있는 경우
+        bfs_fire();
+    int answer = bfs_jihoon();
+    if (answer == -1)
+    {
+        cout << "IMPOSSIBLE";
+        return 0;
+    }
+    cout << answer;
+    return 0;
 }
