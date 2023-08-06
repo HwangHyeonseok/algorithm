@@ -23,10 +23,14 @@ int main(void) {
     }
 
     for(int i=0; i<SOCKS_NUM; i++) {
+        while(socks_num[i] >= 2) {
+            socks_num[i] -= 2;
+        } 
         if(socks_num[i] == 1) {
             cout << i;
             return 0;
         }
+        
     }
 
     return 0;
