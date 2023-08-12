@@ -13,9 +13,10 @@ int main(void) {
 
 
     while(cur_index <= x.length()-1 ) {
-        cout << x[cur_index];
-        if(cur_index % 9 == 0 && cur_index != 0) 
+        if(cur_index % 10 == 0 && cur_index != 0) 
             cout << "\n";
+        cout << x[cur_index];
+
         
         cur_index++;
     }
