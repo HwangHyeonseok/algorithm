@@ -9,10 +9,9 @@ int main(void) {
     int R1,R2;
     int S = 0; // S1,S2ÀÇ Æò±Õ
 
-    cin >> R1 >> R2;
-    S = (R1+R2)/2;
+    cin >> R1 >> S;
 
-    cout << (R1+S)/2;
+    cout << 2*S - R1;
     
 
     return 0;
