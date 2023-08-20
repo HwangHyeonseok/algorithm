@@ -3,13 +3,13 @@
 //     for i <- 1 to n
 //         for j <- 1 to n
 //             for k <- 1 to n
-//                 sum <- sum + A[i] × A[j] × A[k]; # 코드1
+//                 sum <- sum + A[i] × A[j] × A[k]; # 코드1 
 //     return sum;
 // }
 
 // 코드1 의 시간복잡도는 O(n^3) 이다. 
 
-// 단, n의 최댓값이 50만이므로 overflow 을 대비한다. long long으로 받는다.
+// 단, n의 최댓값이 50만이므로 overflow 에 대비 대비한다. long long으로 받는다.
 
 #include <iostream>
 
