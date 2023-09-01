@@ -1,4 +1,5 @@
 // 헷갈렸던 점 : 반올림 구현 방법
+// #반올림 구현 #연산 시 자료형 유의 
 #include <iostream>
 #include <math.h>
 
